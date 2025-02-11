@@ -7,10 +7,21 @@ import matplotlib.pyplot as plt
 
 FASTAPI_URL = "https://informally-unbiased-wallaby.ngrok-free.app"
 
-def decode_numpy(encoded_str: str) -> np.ndarray:
+@st.cache_data
+def get_visualization_data():
+    return requests.post(f"{FASTAPI_URL}/predict")
+
+@st.cache_data
+def decode_resp(resp):
     """Decode Base64 string back to NumPy array."""
-    buffer = io.BytesIO(base64.b64decode(encoded_str))
-    return np.load(buffer, allow_pickle=True)
+    images = io.BytesIO(base64.b64decode(data["images"]))
+    true_masks = io.BytesIO(base64.b64decode(data["true_masks"]))
+    pred_masks = io.BytesIO(base64.b64decode(data["pred_masks"]))
+    return (
+        np.load(images, allow_pickle=True), 
+        np.load(true_masks, allow_pickle=True),
+        np.load(pred_masks, allow_pickle=True)
+    )
 
 st.title("Brain Tumor Segmentation Viewer")
 
@@ -35,12 +46,10 @@ st.download_button("Download Sample Data", sample_response.content, "sample_brai
 # Run Prediction
 st.header("Run Model Prediction")
 if st.button("Get Predictions"):
-    response = requests.post(f"{FASTAPI_URL}/predict")
+    response = get_visualization_data()
     if response.status_code == 200:
         data = response.json()
-        images = decode_numpy(data["images"])
-        true_masks = decode_numpy(data["true_masks"])
-        pred_masks = decode_numpy(data["pred_masks"])
+        images, true_masks, pred_masks = decode_resp(response)
         
         st.session_state["images"] = images
         st.session_state["true_masks"] = true_masks

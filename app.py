@@ -5,7 +5,7 @@ import numpy as np
 import io
 import matplotlib.pyplot as plt
 
-FASTAPI_URL = "https://informally-unbiased-wallaby.ngrok-free.app"
+FASTAPI_URL = "https://giraffe-tender-freely.ngrok-free.app"
 
 def decode_numpy(encoded_str: str) -> np.ndarray:
     """Decode Base64 string back to NumPy array."""
